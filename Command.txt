@@ -1,0 +1,1 @@
+python -m PyInstaller --onefile --clean --name=EssayTyper --icon=typewriter.ico --version-file=version_info.txt essay-typewriter.py
