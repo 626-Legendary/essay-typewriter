@@ -83,9 +83,9 @@ is_running = True
 
 SPEED_PRESET_WPM = {
     "COLLEGE_STUDENT": 50,
-    "HIGH_SCHOOL_STUDENT": 35,
+    "HIGH_SCHOOL_STUDENT": 45,
     "INTERNATIONAL_STUDENT": 22,
-}
+} 
 
 # Display order for the settings menu: College Student is the default.
 SPEED_ORDER = ["COLLEGE_STUDENT", "HIGH_SCHOOL_STUDENT", "INTERNATIONAL_STUDENT", "CUSTOM"]
@@ -110,11 +110,12 @@ REAL_TYPING = True  # whether to simulate realistic typos
 DEFAULT_MIN_THINKING = 0.5
 DEFAULT_MAX_THINKING = 5.0
 
-
 def wpm_to_interval(wpm: float) -> float:
     """Convert words-per-minute into a seconds-per-character base interval."""
-    wpm = max(wpm, 1)
-    return 60 / wpm
+    # 5 chars = 1 word
+    # print("wpm:", wpm) 
+    factor = 1.5
+    return 60/(wpm * 5 * factor)
 
 
 def current_wpm() -> float:
@@ -378,6 +379,10 @@ def stop_typing():
 def start_typing():
     global is_running
 
+    # print(f"DEBUG: TYPING_SPEED_MODE = {TYPING_SPEED_MODE}")
+    # print(f"DEBUG: current_wpm() = {current_wpm()}")
+    # print(f"DEBUG: SPEED_PRESET_WPM = {SPEED_PRESET_WPM}")
+
     if not files_exist():
         print(f"{Color.RED}[-] content.txt / config.ini not found in {BASE_DIR}.{Color.RESET}")
         print("    Please go to Settings, or restart the program to recreate them.")
@@ -411,6 +416,7 @@ def start_typing():
                 simulate_mistake(char)
 
             base_interval = wpm_to_interval(current_wpm())
+            print(" base_interval:", base_interval )
 
             if char in ".,?!":
                 if REAL_THINKING:
@@ -423,7 +429,11 @@ def start_typing():
             else:
                 actual_interval = max(0.02, random.gauss(base_interval, 0.03))
 
-            pyautogui.write(char, interval=actual_interval)
+            if char == '\n':
+                pyautogui.press('enter')
+            else:
+                pyautogui.write(char)
+            time.sleep(actual_interval)
 
 
 # ---------------------------------------------------------------------------
@@ -434,7 +444,7 @@ def main():
     keyboard.add_hotkey('esc', stop_typing)
 
     if not ensure_setup():
-        return
+        return 
 
     apply_config_to_runtime(load_config())
 
